@@ -1,7 +1,3 @@
-# localizationROS
-A ROS package to localize a robot with an ARUCO tag.
-
-
 ## Installation of OpenCV
 ### Installation with `apt`
 You just need to run `sudo apt install python3-opencv`
