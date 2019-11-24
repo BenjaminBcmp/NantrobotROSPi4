@@ -1,0 +1,7 @@
+<launch>
+
+	<node name="localizationTalker" pkg="test_nantrobot" type="position_aruco.py" respawn="true" />
+	<node name="listener" pkg="test_nantrobot" type="test_subscriber.py" respawn="true" />
+
+
+</launch>
