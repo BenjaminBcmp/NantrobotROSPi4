@@ -53,23 +53,23 @@ def localizationTalker():
     while not rospy.is_shutdown():
         ret, imageBrute = cap.read()
         if not ret:
-            msgPose="No image!"
+            msgPose="0"
             rospy.loginfo(msgPose)
             pub.publish(msgPose)
             rate.sleep()
             continue
-        
+
         corners, ids, rejectedImgPoints = aruco.detectMarkers(imageBrute, dictionary)
         # If a marker is detected
-        if ids is not None and len(ids) > 0: 
+        if ids is not None and len(ids) > 0:
             rvecs, tvecs = aruco.estimatePoseSingleMarkers(corners, markerLength, cameraMatrix, distCoeffs)
             # imageCorners = cv.aruco.drawDetectedMarkers(imageBrute, corners, ids)
             # imageAxes = imageCorners.copy()
             # for i in range(0, len(ids)):
             #     imageAxes = aruco.drawAxis(imageAxes, cameraMatrix, distCoeffs, rvecs[i], tvecs[i], markerLength/2)
-                
+
             # cv.imshow("frame", imageAxes)
-            
+
             # Position of the robot with respect to tag ref
             if (ref in ids) and (robot in ids):
                 # Translation and rotation of the robot and the ref
@@ -77,62 +77,60 @@ def localizationTalker():
                 tvecRef = tvecs[ids == ref]
                 rvecRobot = rvecs[ids == robot]
                 tvecRobot = tvecs[ids == robot]
-            
+
                 rotRef, _ = cv.Rodrigues(rvecRef)
                 rotRobot, _ = cv.Rodrigues(rvecRobot)
-                
+
                 # Matrix related to the robot
                 transRobot = np.zeros((4,4))
                 transRobot[0:3, 0:3] = rotRobot
                 transRobot[0:3,3] = tvecRobot
                 transRobot[3, 3] = 1
-                
+
                 # Matrix related to the ref
                 rotRefT = rotRef.transpose()
                 iTransRef = np.zeros((4,4))
                 iTransRef[0:3, 0:3] = rotRefT
                 iTransRef[0:3, 3] = (- rotRefT @ tvecRef.transpose()).flatten()
                 iTransRef[3, 3] = 1
-                
+
                 # Position of the robot in the ref frame
                 posRobotInRobot = np.array([0,0,0,1])
                 posRobotInRef = iTransRef @ (transRobot @ posRobotInRobot)
-                
+
                 # Angle of the robot in the ref frame
                 rotRobotInRef = np.zeros((3,3))
                 rotRobotInRef = iTransRef @ transRobot
-                angleRad = np.arctan2(rotRobotInRef[1,0], rotRobotInRef[0,0]) 
+                angleRad = np.arctan2(rotRobotInRef[1,0], rotRobotInRef[0,0])
                 angleDeg = angleRad*180/np.pi
 
                 # Create the message
-                msgPose = "P{},{},{}\n".format(posRobotInRef[0], posRobotInRef[1], angleDeg)
-            
+                msgPose = "P{:.4f},{:.4f},{:.2f};".format(posRobotInRef[0], posRobotInRef[1], angleDeg)
         else:
             # Default message
-            msgPose = "P{},{},{}\n".format(None, None, None)
-        
+            msgPose = "0"
+
         # Publish the message
         rospy.loginfo(msgPose)
         pub.publish(msgPose)
         rate.sleep()
+#         cv.imshow("frame", imageBrute)
+# 
+#         if cv.waitKey(1) & 0xFF == ord('q'):
+#             break
 
                 # Attention ne marche que si le tag aruco du robot reste parrallèle
                 # au plan du sol (du tag de référence donc)
                 # print(angleDeg)
-            
-        # If no marker is detected, we plot the camera stream
-        # else:
-        #     cv.imshow("frame", imageBrute)
-            
-        # if cv.waitKey(1) & 0xFF == ord('q'):
-        #     break
-        
+
+
     cap.release()
     # cv.destroyAllWindows()
 
 
 if __name__ == '__main__':
     try:
+        #cv.namedWindow("frame")
         localizationTalker()
     except rospy.ROSInterruptException:
         pass
