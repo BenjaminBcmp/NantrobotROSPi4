@@ -1,17 +1,9 @@
-# localizationROS
-A ROS package to localize a robot with an ARUCO tag.
-
-
 ## Installation of OpenCV
 ### Installation with `apt`
-You just need to run
-
-`sudo apt install python3-opencv`
+You just need to run `sudo apt install python3-opencv`
 
 ### Installation with `pip`
-Run 
-
-`sudo pip3 install opencv-contrib-python`
+Run `sudo pip3 install opencv-contrib-python`
 
 You must now install the missing dependencies to be able to use `import cv2`. Use this link to list them https://blog.piwheels.org/how-to-work-out-the-missing-dependencies-for-a-python-package/.
 
